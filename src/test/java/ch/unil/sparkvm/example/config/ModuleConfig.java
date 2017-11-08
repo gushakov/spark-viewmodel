@@ -1,7 +1,7 @@
-package ch.unil.sparkvm.app.config;
+package ch.unil.sparkvm.example.config;
 
-import ch.unil.sparkvm.app.services.DefaultSomeService;
-import ch.unil.sparkvm.app.services.SomeService;
+import ch.unil.sparkvm.example.services.DefaultSomeService;
+import ch.unil.sparkvm.example.services.SomeService;
 import com.google.inject.AbstractModule;
 
 /**

@@ -19,6 +19,7 @@ import spark.TemplateEngine;
 import spark.template.jtwig.JtwigTemplateEngine;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -113,28 +114,39 @@ public class SparkViewModel {
                     injector.injectMembers(vm);
 
                     // find and execute a method corresponding to the requested operation, uses reflection
+                    String arg1;
+                    String arg2;
+                    String arg3;
                     switch (body.size()) {
                         case 1:
                             // no-args
+                            logger.debug("Calling {}", operation);
                             vmType.getMethod(operation).invoke(vm);
                             break;
                         case 2:
                             // one argument
-                            vmType.getMethod(operation, String.class).invoke(vm, body.get(1).getValue());
+                            arg1 = body.get(1).getValue();
+                            logger.debug("Calling {} with arguments {}", operation, Arrays.toString(new Object[]{arg1}));
+                            vmType.getMethod(operation, String.class).invoke(vm, arg1);
                             break;
                         case 3:
                             // two arguments
+                            arg1 = body.get(1).getValue();
+                            arg2 = body.get(2).getValue();
+                            logger.debug("Calling {} with arguments {}", operation, Arrays.toString(new Object[]{arg1, arg2}));
                             vmType
                                     .getMethod(operation, String.class, String.class)
-                                    .invoke(vm, body.get(1).getValue(), body.get(2).getValue());
+                                    .invoke(vm, arg1, arg2);
                             break;
                         default:
                             // three arguments
+                            arg1 = body.get(1).getValue();
+                            arg2 = body.get(2).getValue();
+                            arg3 = body.get(3).getValue();
+                            logger.debug("Calling {} with arguments {}", operation, Arrays.toString(new Object[]{arg1, arg2, arg3}));
                             vmType
                                     .getMethod(operation, String.class, String.class, String.class)
-                                    .invoke(vm, body.get(1).getValue(),
-                                            body.get(2).getValue(),
-                                            body.get(3).getValue());
+                                    .invoke(vm, arg1, arg2, arg3);
                             break;
 
                     }

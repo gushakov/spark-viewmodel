@@ -1,4 +1,4 @@
-package ch.unil.sparkvm.app;
+package ch.unil.sparkvm.example;
 
 import ch.unil.sparkvm.SparkViewModel;
 

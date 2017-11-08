@@ -3,11 +3,11 @@
 {% block main %}
 
 <!-- Copied from Bootstrap tempate https://getbootstrap.com/docs/4.0/examples/narrow-jumbotron/ -->
-<main role="main" data-vm="ch.unil.sparkvm.app.vm.MainVm">
+<main role="main">
 
     <div class="jumbotron">
         <h1 class="display-3">{vm.foo}</h1>
-        <p class="lead">Click on the button to change <code>vm.foo</code></p>
+        <p class="lead">Click to change value of <code>vm.foo</code></p>
         <p><a class="btn btn-lg btn-success" href="#" role="button" rv-on-click="remote | args 'changeFoo'">Change</a></p>
     </div>
 

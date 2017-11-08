@@ -33,9 +33,13 @@ function ViewModel(vmClass, vm) {
 }
 
 $(document).ready(function () {
-    // bind view-model to view, call initialization
-    var view = $('[data-vm]').first();
-    rivets.bind(view, new ViewModel($(view).attr('data-vm'), {})
-        .remote('init'));
+    // for each view DOM element, bind an instance of a view-model
+    $('[data-vm]').each(function () {
+            var view = this;
+            rivets.bind(view, new ViewModel($(view).attr('data-vm'), {})
+                .remote('init'));
+        }
+    );
+
 });
 

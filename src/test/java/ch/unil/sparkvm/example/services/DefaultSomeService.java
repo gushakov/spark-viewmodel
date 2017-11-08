@@ -1,4 +1,4 @@
-package ch.unil.sparkvm.app.services;
+package ch.unil.sparkvm.example.services;
 
 import com.google.inject.Singleton;
 import org.slf4j.Logger;

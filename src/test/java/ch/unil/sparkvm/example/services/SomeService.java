@@ -1,4 +1,4 @@
-package ch.unil.sparkvm.app.services;
+package ch.unil.sparkvm.example.services;
 
 /**
  * @author gushakov

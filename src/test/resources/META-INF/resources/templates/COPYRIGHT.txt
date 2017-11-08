@@ -1,0 +1,4 @@
+Copyright disclaimer.
+
+Some resources used in this application: HTML, favicons, JavaScript are from Bootstrap 4 distribution.
+See https://getbootstrap.com/docs/4.0/examples/
