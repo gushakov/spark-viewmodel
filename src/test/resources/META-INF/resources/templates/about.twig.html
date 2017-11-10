@@ -3,10 +3,10 @@
 {% block main %}
 
 <!-- Copied from Bootstrap tempate https://getbootstrap.com/docs/4.0/examples/narrow-jumbotron/ -->
-<main role="main">
+<main role="main" data-vm="ch.unil.sparkvm.example.vm.AboutVm">
 
     <div class="jumbotron">
-        <h1 class="display-3">{vm.message}</h1>
+        <h1 class="display-3" rv-data="vm.message"></h1>
         <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
         <p><a class="btn btn-lg btn-success" href="#" role="button">Sign up today</a></p>
     </div>

@@ -14,6 +14,7 @@ import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.ModelAndView;
+import spark.Session;
 import spark.Spark;
 import spark.TemplateEngine;
 import spark.template.jtwig.JtwigTemplateEngine;
@@ -70,8 +71,14 @@ public class SparkViewModel {
         Spark.staticFileLocation("/META-INF/resources");
 
         // home
-        Spark.get("/", (request, response) ->
-                new ModelAndView(new HashMap<>(), "main.twig.html"), templateEngine);
+        Spark.get("/", (request, response) -> {
+
+                    // invalidate session if refresh is requested on the home page
+                    if (request.queryParams("refresh") != null) {
+                        request.session().invalidate();
+                    }
+                    return new ModelAndView(new HashMap<>(), "main.twig.html");
+                }, templateEngine);
 
         // navigation
         Spark.get("/:template", (request, response) ->
@@ -81,79 +88,86 @@ public class SparkViewModel {
         Spark.post("/dynamic", (request, response) -> {
             response.type("application/json");
 
+            // get the session
+            final Session session = request.session();
+
             // get class of view-model and operation from request headers
             final String vmClass = request.headers("vmClass");
             final String operation = request.headers("operation");
 
-            logger.debug("Processing dynamic request, uri: {}, vmClass: {}, operation: {}", request.uri(), vmClass, operation);
+            logger.debug("[{}] Processing dynamic request, uri: {}, vmClass: {}, operation: {}", session.id(), request.uri(), vmClass, operation);
 
             // type of the view-model
             final Class<?> vmType = Class.forName(vmClass);
+
             // view-model instance
             final Object vm;
 
-            switch (operation) {
-                case "init":
-                    // just instantiate the view-model using no-arguments constructor
-                    vm = injector.getInstance(vmType);
-                    break;
-                default:
-                    // parse POST body
-                    final List<NameValuePair> body = URLEncodedUtils.parse(request.body(), StandardCharsets.UTF_8);
-
-                    // get the serialized model
-                    final String model = body.stream()
-                            .filter(pair -> pair.getName().equals("model"))
-                            .findFirst().orElseThrow(IllegalStateException::new)
-                            .getValue();
-
-                    // deserialze view-model
-                    vm = gson.fromJson(model, vmType);
-
-                    // wire any services
-                    injector.injectMembers(vm);
-
-                    // find and execute a method corresponding to the requested operation, uses reflection
-                    String arg1;
-                    String arg2;
-                    String arg3;
-                    switch (body.size()) {
-                        case 1:
-                            // no-args
-                            logger.debug("Calling {}", operation);
-                            vmType.getMethod(operation).invoke(vm);
-                            break;
-                        case 2:
-                            // one argument
-                            arg1 = body.get(1).getValue();
-                            logger.debug("Calling {} with arguments {}", operation, Arrays.toString(new Object[]{arg1}));
-                            vmType.getMethod(operation, String.class).invoke(vm, arg1);
-                            break;
-                        case 3:
-                            // two arguments
-                            arg1 = body.get(1).getValue();
-                            arg2 = body.get(2).getValue();
-                            logger.debug("Calling {} with arguments {}", operation, Arrays.toString(new Object[]{arg1, arg2}));
-                            vmType
-                                    .getMethod(operation, String.class, String.class)
-                                    .invoke(vm, arg1, arg2);
-                            break;
-                        default:
-                            // three arguments
-                            arg1 = body.get(1).getValue();
-                            arg2 = body.get(2).getValue();
-                            arg3 = body.get(3).getValue();
-                            logger.debug("Calling {} with arguments {}", operation, Arrays.toString(new Object[]{arg1, arg2, arg3}));
-                            vmType
-                                    .getMethod(operation, String.class, String.class, String.class)
-                                    .invoke(vm, arg1, arg2, arg3);
-                            break;
-
-                    }
+            final String jsonIn = session.attribute(vmClass);
+            if (jsonIn != null) {
+                // deserialze view-model from the json stored in the session
+                vm = gson.fromJson(jsonIn, vmType);
+                // wire dependencies
+                injector.injectMembers(vm);
+            } else {
+                // or request a new instance from the container
+                vm = injector.getInstance(vmType);
             }
 
-            // serialize view-model
-            return gson.toJson(vm);
+            // skip "init" operation, the initialization logic is processed already
+            if (!operation.equals("init")) {
+
+                // parse POST body
+                final List<NameValuePair> body = URLEncodedUtils.parse(request.body(), StandardCharsets.UTF_8);
+
+                // find and execute a method corresponding to the requested operation, uses reflection
+                String arg1;
+                String arg2;
+                String arg3;
+                switch (body.size()) {
+                    case 0:
+                        // no-args
+                        logger.debug("[{}] Calling {}", session.id(), operation);
+                        vmType.getMethod(operation).invoke(vm);
+                        break;
+                    case 1:
+                        // one argument
+                        arg1 = body.get(0).getValue();
+                        logger.debug("[{}] Calling {} with arguments {}", session.id(), operation, Arrays.toString(new Object[]{arg1}));
+                        vmType.getMethod(operation, String.class).invoke(vm, arg1);
+                        break;
+                    case 2:
+                        // two arguments
+                        arg1 = body.get(0).getValue();
+                        arg2 = body.get(1).getValue();
+                        logger.debug("[{}] Calling {} with arguments {}", session.id(), operation, Arrays.toString(new Object[]{arg1, arg2}));
+                        vmType
+                                .getMethod(operation, String.class, String.class)
+                                .invoke(vm, arg1, arg2);
+                        break;
+                    default:
+                        // three arguments
+                        arg1 = body.get(0).getValue();
+                        arg2 = body.get(1).getValue();
+                        arg3 = body.get(2).getValue();
+                        logger.debug("[{}] Calling {} with arguments {}", session.id(), operation, Arrays.toString(new Object[]{arg1, arg2, arg3}));
+                        vmType
+                                .getMethod(operation, String.class, String.class, String.class)
+                                .invoke(vm, arg1, arg2, arg3);
+                        break;
+
+                }
+            }
+
+
+            // serialize view-model to JSON
+            final String jsonOut = gson.toJson(vm);
+
+            // store view-model in the session
+            logger.debug("[{}] Storing JSON serialized view-model {} for view-model class {}", session.id(), jsonOut, vmClass);
+            session.attribute(vmClass, jsonOut);
+
+            return jsonOut;
 
         });
     }

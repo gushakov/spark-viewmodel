@@ -1,8 +1,11 @@
 package ch.unil.sparkvm.example.vm;
 
+import ch.unil.sparkvm.example.model.Fruit;
 import ch.unil.sparkvm.example.services.SomeService;
 
 import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * @author gushakov
@@ -12,37 +15,17 @@ public class MainVm {
     @Inject
     private transient SomeService someService;
 
-    private boolean homeActive;
-
-    private boolean aboutActive;
-
-    private boolean contactActive;
-
     private String foo;
 
-    private String message;
+    private List<Fruit> fruit;
 
     public MainVm() {
         this.foo = "bar";
-        resetNavigation();
-        this.homeActive = true;
-        this.message = "Hello World";
+        fruit = Arrays.asList(new Fruit(1, "apple"), new Fruit(2, "orange"));
     }
 
     public void changeFoo() {
         foo = someService.transform(foo);
-    }
-
-    public void onNavigate(String link) {
-        homeActive = link.equals("home");
-        aboutActive = link.equals("about");
-        contactActive = link.equals("contact");
-    }
-
-    private void resetNavigation() {
-        homeActive = false;
-        aboutActive = false;
-        contactActive = false;
     }
 
 }
