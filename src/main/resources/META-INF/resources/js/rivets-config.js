@@ -23,31 +23,6 @@ rivets.formatters.nav = function (fn) {
     };
 };
 
-// code from https://jsfiddle.net/LeedsEbooks/fba88ph9/
-
-function ComboboxViewModel(items) {
-    this.items = items;
-
-    var self = this;
-    this.start = function (el, attributes) {
-        console.log(">>>>>>>>>>>>>>>>>>", el, attributes);
-        // $("combobox").combobox();
-        return self;
-    }
-}
-
-/*
-rivets.components.combobox = {
-    template: function () {
-       return '<select><option rv-each-item="items">{ item.name }</option></select>'
-    },
-    initialize: function (el, attributes) {
-        return new ComboboxViewModel([{name: "foo"}, {name: "bar"}]).start(el, attributes);
-    }
-    
-};
-*/
-
 // from example in http://jsfiddle.net/LeedsEbooks/ep6yp2bg/
 // define a view-model object
 function ViewModel(vmClass, vm) {
@@ -74,9 +49,6 @@ function ViewModel(vmClass, vm) {
 
 // once template is processed
 $(document).ready(function () {
-
-    // $('.combobox').combobox();
-
     // for each view DOM element, create, initialize and bind a new instance of a view-model
     $('[data-vm]').each(function () {
             var view = this;

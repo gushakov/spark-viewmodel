@@ -28,4 +28,9 @@ public class MainVm {
         foo = someService.transform(foo);
     }
 
+    public void addFruit(String name){
+        final int id = fruit.stream().map(Fruit::getId).max(Integer::compareTo).get();
+        fruit.add(new Fruit(id+1, name));
+    }
+
 }
